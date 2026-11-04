@@ -1,0 +1,39 @@
+# docker-compose 用法（Unraid 上装 Compose Manager 插件，或任意装了 docker compose 的机器）
+#
+#   docker compose up -d --build
+#   docker compose logs -f
+#
+# 镜像可以是本地构建的 steam-bark:1.0.0，也可以换成你 push 到 Docker Hub 的 用户名/steam-bark:latest
+services:
+  steam-bark:
+    # 直接用已发布的镜像；想用本地构建的版本就换成 steam-bark:1.0.0
+    image: sdparklab/steam-bark:latest
+    build: .
+    container_name: steam-bark
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+
+      # ---- Steam ----
+      STEAM_API_KEY: "${STEAM_API_KEY}"     # 必填
+      WATCH: "${WATCH}"                     # 必填，steamid=备注，逗号分隔
+      # LIST_STEAM_ID: "7656119xxxxxxxxxx"  # 仅 --list-friends 用
+
+      # ---- Bark ----
+      BARK_SERVER: http://192.168.100.200:8880
+      BARK_KEY: "${BARK_KEY}"               # 22 位 device_key，不是 64 位 APNs token
+      BARK_GROUP: Steam                     # ts3 用的是 TeamSpeak，不要重名
+      BARK_SOUND: calypso                   # 与 ts3-bark 保持一致
+      BARK_LEVEL: active
+
+      # ---- 行为 ----
+      POLL_SECONDS: "60"
+      ONLY_GAME: "false"                    # true = 只在开始玩游戏时推
+      NOTIFY_OFFLINE: "true"                # 是否播报下线
+      NOTIFY_SWITCH: "false"                # 是否播报换游戏
+      QUIET_HOURS: ""                       # 例如 "02:00-09:00"
+      ALERT_ON_ERROR: "true"                # 查询连续失败时推告警
+      ALERT_AFTER_FAILS: "3"                # 连续失败几次才告警
+      TZ_OFFSET_HOURS: "8"
+    volumes:
+      - ./data:/data
